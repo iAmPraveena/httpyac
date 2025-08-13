@@ -1,0 +1,294 @@
+### ss
+# @ verbose
+# random string generator 
+
+{{
+
+    function namegen() {
+    const characters = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let result = '';
+    const charactersLength = characters.length;
+    for (let i = 0; i < 8; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result
+    }
+    $
+    =namegen();
+    $global.lastname=namegen();
+    $global.usercn=namegen()
+}}
+# @user-cn = Rama{{$randomInt 0001 9999}}
+
+@usermail = {{user-cn}}@test-domain.com
+POST {{SF-URL}}
+SOAPAction : Login
+Content-type: text/xml
+
+<?xml version="1.0" encoding="UTF-8"?>
+<env:Envelope
+    xmlns:env="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:urn="urn:partner.soap.sforce.com">
+    <env:Header>
+        <n1:CallOptions
+            xmlns:n1="urn:partner.soap.sforce.com">
+            <n1:client>SF-CLient</n1:client>
+        </n1:CallOptions>
+    </env:Header>
+    <env:Body>
+        <urn:login>
+            <urn:username>{{SF-User-Name}}</urn:username>
+            <urn:password>{{SF-User-Pwd}}{{SF-Security-Token}}</urn:password>
+        </urn:login>
+    </env:Body>
+</env:Envelope>
+
+{{
+const { parseStringPromise } = require('xml2js');
+const fs = require('fs');
+console.log(ss.response)
+    try {
+        // Parse the XML string into a JavaScript object
+        const result = await parseStringPromise(ss);
+        // console.log('Parsed XML structure:', JSON.stringify(result, null, 2));
+
+        // Navigate through the parsed XML object to find the sessionId
+        const sessionId = result?.['soapenv:Envelope']?.['soapenv:Body']?.[0]?.loginResponse?.[0]?.result?.[0]?.sessionId?.[0];
+         $global.sessionId=sessionId
+    } catch (error) {
+        console.error('Error parsing XML:', error);
+        throw error;
+    }
+}}
+
+###
+POST {{SF-Context-URL}}/services/Soap/u/52.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+
+<soapenv:Envelope
+    xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/"
+    xmlns:urn="urn:partner.soap.sforce.com">
+    <soapenv:Header>
+        <urn:SessionHeader>
+            <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+        </urn:SessionHeader>
+    </soapenv:Header>
+<soapenv:Body>
+<urn:query>
+  <urn:queryString>SELECT UserOrGroupId, GroupId FROM GroupMember WHERE UserOrGroupId = '005dL00000tlzaYQAQ'</urn:queryString>
+</urn:query>
+</soapenv:Body>undefined</soapenv:Envelope>
+
+POST {{SF-Context-URL}}/services/Soap/u/52.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:partner.soap.sforce.com" xmlns:urn1="urn:sobject.partner.soap.sforce.com">
+        <soapenv:Header>
+                <urn:SessionHeader>
+                        <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+                </urn:SessionHeader>
+        </soapenv:Header>
+        <soapenv:Body>
+                <urn:create>
+                        <urn:sObject>
+                                <urn1:type>User</urn1:type>
+                                <PostalCode>65001</PostalCode>
+                                <State>Tamil Nadu</State>
+                                <Street>340 VL Road</Street>
+                                <LastName>{{$global.lastname}}</LastName>
+                                <FirstName>{{$global.usercn}}</FirstName>
+                                <Email>{{$global.usercn}}@test-domain.com</Email>
+                                <Title>Expert</Title>
+                                <Country>India</Country>
+                                <Phone>9878765415</Phone>
+                                <Alias>{{$global.usercn}}</Alias>
+                                <Username>{{$global.usercn}}@test-domain.com</Username>
+                                <ProfileId>{{SF-ProfileId}}  </ProfileId>
+                                <TimeZoneSidKey>America/Los_Angeles</TimeZoneSidKey>
+                                <EmailEncodingKey>UTF-8</EmailEncodingKey>
+                                <LocaleSidKey>en_US</LocaleSidKey>
+                                <LanguageLocaleKey>en_US</LanguageLocaleKey>
+                        </urn:sObject>
+                </urn:create>
+        </soapenv:Body>
+</soapenv:Envelope>
+
+POST {{SF-Context-URL}}services/Soap/c/56.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:enterprise.soap.sforce.com">
+  <soapenv:Header>
+    <urn:SessionHeader>
+      <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+    </urn:SessionHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <urn:query>
+      <urn:queryString>SELECT UserOrGroupId FROM GroupMember WHERE GroupId = '00GdL00000BOUZh' and UserOrGroupId='005dL0000073BxNQAU'</urn:queryString>
+    </urn:query>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+
+POST {{SF-Context-URL}}services/Soap/c/56.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:enterprise.soap.sforce.com">
+  <soapenv:Header>
+    <urn:SessionHeader>
+      <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+    </urn:SessionHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <urn:query>
+      <urn:queryString>SELECT Id, FirstName, LastName, UserRole.Name, Email FROM User WHERE Email='muttu7289272892@ot.com'</urn:queryString>
+    </urn:query>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+
+POST {{SF-Context-URL}}services/Soap/c/56.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:enterprise.soap.sforce.com">
+  <soapenv:Header>
+    <urn:SessionHeader>
+      <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+    </urn:SessionHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <urn:query>
+      <urn:queryString>SELECT UserRole.Name FROM User WHERE Email = 'Muttu2767327673@ot.com'
+</urn:queryString>
+    </urn:query>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+
+POST {{SF-Context-URL}}services/Soap/c/56.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:enterprise.soap.sforce.com">
+  <soapenv:Header>
+    <urn:SessionHeader>
+      <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+    </urn:SessionHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <urn:query>
+      <urn:queryString>SELECT Id, Name, UserOrGroupId FROM GroupMember WHERE GroupId='00GdL00000BOUZhUAP'</urn:queryString>
+    </urn:query>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+POST {{SF-Context-URL}}services/Soap/c/56.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:enterprise.soap.sforce.com">
+  <soapenv:Header>
+    <urn:SessionHeader>
+      <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+    </urn:SessionHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <urn:query>
+      <urn:queryString>SELECT Id, Name FROM Profile WHERE Name='Identity User'</urn:queryString>
+    </urn:query>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+
+POST {{SF-Context-URL}}services/Soap/c/56.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:enterprise.soap.sforce.com">
+  <soapenv:Header>
+    <urn:SessionHeader>
+      <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+    </urn:SessionHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <urn:query>
+      <urn:queryString>SELECT Id, Name, DeveloperName, ParentRoleId FROM UserRole Where Name='Western Sales Team'
+</urn:queryString>
+    </urn:query>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+POST {{SF-Context-URL}}services/Soap/c/56.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:enterprise.soap.sforce.com">
+  <soapenv:Header>
+    <urn:SessionHeader>
+      <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+    </urn:SessionHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <urn:query>
+      <urn:queryString>SELECT Id, Name, TotalLicenses, UsedLicenses FROM UserLicense</urn:queryString>
+    </urn:query>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+
+POST {{SF-Context-URL}}services/Soap/c/56.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:enterprise.soap.sforce.com">
+  <soapenv:Header>
+    <urn:SessionHeader>
+      <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+    </urn:SessionHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <urn:query>
+      <urn:queryString>SELECT Id, Name FROM UserRole</urn:queryString>
+    </urn:query>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+
+POST {{SF-Context-URL}}services/Soap/c/56.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:enterprise.soap.sforce.com">
+  <soapenv:Header>
+    <urn:SessionHeader>
+      <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+    </urn:SessionHeader>
+  </soapenv:Header>
+  <soapenv:Body>
+    <urn:query>
+      <urn:queryString>SELECT Id, Name, Email FROM User WHERE UserRole.Name = 'Western Sales Team' and EMAIL='Muttu3402334023@test-domain.com'</urn:queryString>
+    </urn:query>
+  </soapenv:Body>
+</soapenv:Envelope>
+
+
+
+
+
+POST {{SF-Context-URL}}services/Soap/u/56.0/{{SF-ProfileId}}
+Content-type: text/xml
+SOAPAction : POST
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:urn="urn:partner.soap.sforce.com" xmlns:urn1="urn:sobject.partner.soap.sforce.com">
+        <soapenv:Header>
+                <urn:SessionHeader>
+                        <urn:sessionId>{{$global.sessionId }}</urn:sessionId>
+                </urn:SessionHeader>
+        </soapenv:Header>
+<soapenv:Body>
+                <urn:create>
+ <urn:sObjects xsi:type="urn:GroupMember" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+            <urn:GroupId>00GdL00000BOTyb</urn:GroupId>
+            <urn1:UserOrGroupId>005dL00000FkWhu</urn1:UserOrGroupId>
+         </urn:sObjects>
+                </urn:create>
+        </soapenv:Body>
+
+</soapenv:Envelope>
+
+
